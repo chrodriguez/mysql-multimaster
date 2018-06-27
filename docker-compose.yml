@@ -1,0 +1,44 @@
+version: '3'
+services:
+  db-01:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      - db-01:/var/lib/mysql
+      - ./init-scripts/00-create-replica-user.sql:/docker-entrypoint-initdb.d/00-create-replica-user.sql
+      - ./init-scripts/01-start-slave-db-01x2.sql:/docker-entrypoint-initdb.d/01-start-slave.sql
+    command:
+    - --server-id=1
+    - --gtid-mode=ON
+    - --enforce-gtid-consistency=ON
+    - --master-info-repository=TABLE
+    - --relay-log-info-repository=TABLE
+    - --binlog-checksum=NONE
+    - --log-slave-updates=ON
+    - --log-bin=binlog
+    - --binlog-format=ROW
+    - --auto_increment_increment=2
+    - --auto_increment_offset=0
+  db-02:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      - db-02:/var/lib/mysql
+      - ./init-scripts/01-start-slave-db-02x2.sql:/docker-entrypoint-initdb.d/01-start-slave.sql
+    command:
+    - --server-id=2
+    - --gtid-mode=ON
+    - --enforce-gtid-consistency=ON
+    - --master-info-repository=TABLE
+    - --relay-log-info-repository=TABLE
+    - --binlog-checksum=NONE
+    - --log-slave-updates=ON
+    - --log-bin=binlog
+    - --binlog-format=ROW
+    - --auto_increment_increment=2
+    - --auto_increment_offset=1
+volumes:
+  db-01:
+  db-02:
